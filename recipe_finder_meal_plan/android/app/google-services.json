@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "245953274379",
+    "project_id": "recipe-finder-meal-planner",
+    "storage_bucket": "recipe-finder-meal-planner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:245953274379:android:1f0726a5e8ff0969271d0e",
+        "android_client_info": {
+          "package_name": "com.example.recipe_finder_meal_plan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBE2QycEWzo86FHBxvb6TApUCLacrKE-Zc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
