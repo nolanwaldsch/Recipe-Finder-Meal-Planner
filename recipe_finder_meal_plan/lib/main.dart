@@ -22,19 +22,67 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
-      home: const RecipeSearchPage(),
+      home: const HomePage(),
     );
   }
 }
 
-class RecipeSearchPage extends StatefulWidget {
-  const RecipeSearchPage({super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
-  State<RecipeSearchPage> createState() => _RecipeSearchPageState();
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: colorScheme.inversePrimary,
+        title: const Text('Recipe Finder'),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'Plan meals, discover recipes, and save your favorites.',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Search Spoonacular to find new ideas for breakfast, lunch, or dinner.',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const RecipePage(),
+                      ),
+                    );
+                  },
+                  child: const Text('Go to Search'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _RecipeSearchPageState extends State<RecipeSearchPage> {
+class RecipePage extends StatefulWidget {
+  const RecipePage({super.key});
+
+  @override
+  State<RecipePage> createState() => _RecipePageState();
+}
+
+class _RecipePageState extends State<RecipePage> {
   final TextEditingController _controller = TextEditingController();
   final SpoonacularApi _api = SpoonacularApi();
 
@@ -122,9 +170,7 @@ class _RecipeSearchPageState extends State<RecipeSearchPage> {
               if (_errorMessage != null)
                 Text(
                   _errorMessage!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               if (_results.isEmpty && !_isLoading && _errorMessage == null)
                 const Text('Start by searching for a recipe.'),
