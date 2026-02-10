@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
+import 'ingredients/ingredients_page.dart';
 import 'spoonacular/recipe_summary.dart';
 import 'spoonacular/spoonacular_api.dart';
 
@@ -65,6 +66,20 @@ class HomePage extends StatelessWidget {
                     );
                   },
                   child: const Text('Go to Search'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const IngredientsPage(),
+                      ),
+                    );
+                  },
+                  child: const Text('Add Ingredients'),
                 ),
               ),
             ],
