@@ -13,20 +13,61 @@ class SpoonacularApi {
 
   Future<List<RecipeSummary>> searchRecipes(
     String query, {
+    List<String> includeIngredients = const <String>[],
     int number = 20,
   }) async {
     final trimmedQuery = query.trim();
-    if (trimmedQuery.isEmpty) {
+    final trimmedIngredients = includeIngredients
+        .map((ingredient) => ingredient.trim())
+        .where((ingredient) => ingredient.isNotEmpty)
+        .toList();
+
+    if (trimmedQuery.isEmpty && trimmedIngredients.isEmpty) {
       return [];
     }
 
-    final uri = Uri.parse('$_baseUrl/recipes/complexSearch').replace(
-      queryParameters: <String, String>{
-        'query': trimmedQuery,
-        'number': number.toString(),
-        'apiKey': spoonacularApiKey,
-      },
-    );
+    if (trimmedIngredients.isNotEmpty) {
+      final uri = Uri.parse('$_baseUrl/recipes/findByIngredients').replace(
+        queryParameters: <String, String>{
+          'ingredients': trimmedIngredients.join(','),
+          'number': number.toString(),
+          'apiKey': spoonacularApiKey,
+        },
+      );
+
+      final response = await _client.get(uri);
+      if (response.statusCode != 200) {
+        throw Exception('Spoonacular request failed (${response.statusCode}).');
+      }
+
+      final decoded = jsonDecode(response.body) as List<dynamic>;
+      final results = decoded
+          .whereType<Map<String, dynamic>>()
+          .map(RecipeSummary.fromJson)
+          .toList();
+
+      if (trimmedQuery.isEmpty) {
+        return results;
+      }
+
+      final loweredQuery = trimmedQuery.toLowerCase();
+      return results
+          .where((recipe) => recipe.title.toLowerCase().contains(loweredQuery))
+          .toList();
+    }
+
+    final queryParameters = <String, String>{
+      'number': number.toString(),
+      'apiKey': spoonacularApiKey,
+    };
+
+    if (trimmedQuery.isNotEmpty) {
+      queryParameters['query'] = trimmedQuery;
+    }
+
+    final uri = Uri.parse(
+      '$_baseUrl/recipes/complexSearch',
+    ).replace(queryParameters: queryParameters);
 
     final response = await _client.get(uri);
     if (response.statusCode != 200) {

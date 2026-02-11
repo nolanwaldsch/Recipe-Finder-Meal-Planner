@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
 import 'ingredients/ingredients_page.dart';
+import 'ingredients/ingredients_repository.dart';
 import 'spoonacular/recipe_summary.dart';
 import 'spoonacular/spoonacular_api.dart';
 
@@ -112,7 +113,11 @@ class _RecipePageState extends State<RecipePage> {
     });
 
     try {
-      final results = await _api.searchRecipes(_controller.text);
+      final ingredients = IngredientsRepository.instance.ingredients;
+      final results = await _api.searchRecipes(
+        _controller.text,
+        includeIngredients: ingredients,
+      );
       if (!mounted) {
         return;
       }
@@ -145,6 +150,7 @@ class _RecipePageState extends State<RecipePage> {
 
   @override
   Widget build(BuildContext context) {
+    final ingredients = IngredientsRepository.instance.ingredients;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -182,13 +188,29 @@ class _RecipePageState extends State<RecipePage> {
                 ],
               ),
               const SizedBox(height: 16),
+              if (ingredients.isNotEmpty)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: ingredients
+                        .map((ingredient) => Chip(label: Text(ingredient)))
+                        .toList(),
+                  ),
+                ),
+              if (ingredients.isNotEmpty) const SizedBox(height: 16),
               if (_errorMessage != null)
                 Text(
                   _errorMessage!,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               if (_results.isEmpty && !_isLoading && _errorMessage == null)
-                const Text('Start by searching for a recipe.'),
+                Text(
+                  ingredients.isEmpty
+                      ? 'Start by searching for a recipe.'
+                      : 'Search by keyword or adjust your ingredient filters.',
+                ),
               if (_results.isNotEmpty)
                 Expanded(
                   child: ListView.separated(

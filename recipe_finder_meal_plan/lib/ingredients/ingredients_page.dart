@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'ingredients_repository.dart';
+
 class IngredientsPage extends StatefulWidget {
   const IngredientsPage({super.key});
 
@@ -9,7 +11,13 @@ class IngredientsPage extends StatefulWidget {
 
 class _IngredientsPageState extends State<IngredientsPage> {
   final TextEditingController _controller = TextEditingController();
-  final List<String> _ingredients = <String>[];
+  List<String> _ingredients = <String>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _ingredients = List<String>.of(IngredientsRepository.instance.ingredients);
+  }
 
   void _addIngredient() {
     final value = _controller.text.trim();
@@ -17,14 +25,20 @@ class _IngredientsPageState extends State<IngredientsPage> {
       return;
     }
     setState(() {
-      _ingredients.add(value);
+      IngredientsRepository.instance.add(value);
+      _ingredients = List<String>.of(
+        IngredientsRepository.instance.ingredients,
+      );
       _controller.clear();
     });
   }
 
   void _removeIngredient(int index) {
     setState(() {
-      _ingredients.removeAt(index);
+      IngredientsRepository.instance.removeAt(index);
+      _ingredients = List<String>.of(
+        IngredientsRepository.instance.ingredients,
+      );
     });
   }
 
