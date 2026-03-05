@@ -11,35 +11,29 @@ class IngredientsPage extends StatefulWidget {
 
 class _IngredientsPageState extends State<IngredientsPage> {
   final TextEditingController _controller = TextEditingController();
-  List<String> _ingredients = <String>[];
-
-  @override
-  void initState() {
-    super.initState();
-    _ingredients = List<String>.of(IngredientsRepository.instance.ingredients);
-  }
 
   void _addIngredient() {
     final value = _controller.text.trim();
     if (value.isEmpty) {
       return;
     }
-    setState(() {
-      IngredientsRepository.instance.add(value);
-      _ingredients = List<String>.of(
-        IngredientsRepository.instance.ingredients,
-      );
-      _controller.clear();
-    });
+
+    final added = IngredientsRepository.instance.add(value);
+    _controller.clear();
+    if (!added) {
+      return;
+    }
+
+    setState(() {});
   }
 
-  void _removeIngredient(int index) {
-    setState(() {
-      IngredientsRepository.instance.removeAt(index);
-      _ingredients = List<String>.of(
-        IngredientsRepository.instance.ingredients,
-      );
-    });
+  void _removeIngredient(String ingredient) {
+    final removed = IngredientsRepository.instance.remove(ingredient);
+    if (!removed) {
+      return;
+    }
+
+    setState(() {});
   }
 
   @override
@@ -51,6 +45,7 @@ class _IngredientsPageState extends State<IngredientsPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final ingredients = IngredientsRepository.instance.ingredients;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: colorScheme.inversePrimary,
@@ -82,20 +77,20 @@ class _IngredientsPageState extends State<IngredientsPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              if (_ingredients.isEmpty)
+              if (ingredients.isEmpty)
                 const Text('Add ingredients one by one to build your list.'),
-              if (_ingredients.isNotEmpty)
+              if (ingredients.isNotEmpty)
                 Expanded(
                   child: ListView.separated(
-                    itemCount: _ingredients.length,
+                    itemCount: ingredients.length,
                     separatorBuilder: (_, __) => const Divider(height: 24),
                     itemBuilder: (context, index) {
-                      final ingredient = _ingredients[index];
+                      final ingredient = ingredients[index];
                       return ListTile(
                         leading: const Icon(Icons.check_circle_outline),
                         title: Text(ingredient),
                         trailing: IconButton(
-                          onPressed: () => _removeIngredient(index),
+                          onPressed: () => _removeIngredient(ingredient),
                           icon: const Icon(Icons.close),
                           tooltip: 'Remove',
                         ),

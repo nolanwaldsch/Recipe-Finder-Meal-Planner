@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -10,6 +12,11 @@ class SpoonacularApi {
 
   final http.Client _client;
   static const String _baseUrl = 'https://api.spoonacular.com';
+  static const Duration _requestTimeout = Duration(seconds: 12);
+
+  void close() {
+    _client.close();
+  }
 
   Future<List<RecipeSummary>> searchRecipes(
     String query, {
@@ -35,10 +42,7 @@ class SpoonacularApi {
         },
       );
 
-      final response = await _client.get(uri);
-      if (response.statusCode != 200) {
-        throw Exception('Spoonacular request failed (${response.statusCode}).');
-      }
+      final response = await _get(uri);
 
       final decoded = jsonDecode(response.body) as List<dynamic>;
       final results = decoded
@@ -69,10 +73,7 @@ class SpoonacularApi {
       '$_baseUrl/recipes/complexSearch',
     ).replace(queryParameters: queryParameters);
 
-    final response = await _client.get(uri);
-    if (response.statusCode != 200) {
-      throw Exception('Spoonacular request failed (${response.statusCode}).');
-    }
+    final response = await _get(uri);
 
     final decoded = jsonDecode(response.body) as Map<String, dynamic>;
     final results = decoded['results'] as List<dynamic>? ?? <dynamic>[];
@@ -81,5 +82,40 @@ class SpoonacularApi {
         .whereType<Map<String, dynamic>>()
         .map(RecipeSummary.fromJson)
         .toList();
+  }
+
+  Future<http.Response> _get(Uri uri) async {
+    try {
+      final response = await _client.get(uri).timeout(_requestTimeout);
+      if (response.statusCode == 200) {
+        return response;
+      }
+
+      throw Exception(_statusCodeMessage(response.statusCode));
+    } on SocketException {
+      throw Exception('Network error. Check your connection and try again.');
+    } on http.ClientException {
+      throw Exception('Unable to reach Spoonacular right now.');
+    } on FormatException {
+      throw Exception('Received an unexpected response from Spoonacular.');
+    } on TimeoutException {
+      throw Exception('Request timed out. Please try again.');
+    }
+  }
+
+  String _statusCodeMessage(int statusCode) {
+    if (statusCode == 401 || statusCode == 403) {
+      return 'Spoonacular authentication failed. Check API key configuration.';
+    }
+
+    if (statusCode == 402 || statusCode == 429) {
+      return 'Spoonacular API quota exceeded. Please try again later.';
+    }
+
+    if (statusCode >= 500) {
+      return 'Spoonacular is temporarily unavailable. Please retry shortly.';
+    }
+
+    return 'Spoonacular request failed ($statusCode).';
   }
 }
