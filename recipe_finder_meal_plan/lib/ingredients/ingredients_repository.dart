@@ -1,21 +1,25 @@
+import 'dart:collection';
+
 class IngredientsRepository {
   IngredientsRepository._();
 
   static final IngredientsRepository instance = IngredientsRepository._();
 
-  final List<String> _ingredients = <String>[];
+  final LinkedHashSet<String> _ingredients = LinkedHashSet<String>();
 
-  List<String> get ingredients => List<String>.unmodifiable(_ingredients);
+  List<String> get ingredients => _ingredients.toList(growable: false);
 
-  void add(String value) {
-    _ingredients.add(value);
+  bool add(String value) {
+    final normalized = value.trim();
+    if (normalized.isEmpty) {
+      return false;
+    }
+
+    return _ingredients.add(normalized);
   }
 
-  void removeAt(int index) {
-    if (index < 0 || index >= _ingredients.length) {
-      return;
-    }
-    _ingredients.removeAt(index);
+  bool remove(String value) {
+    return _ingredients.remove(value);
   }
 
   void clear() {

@@ -107,44 +107,49 @@ class _RecipePageState extends State<RecipePage> {
   String? _errorMessage;
 
   Future<void> _search() async {
+    final query = _controller.text.trim();
+    final ingredients = IngredientsRepository.instance.ingredients;
+    if (query.isEmpty && ingredients.isEmpty) {
+      setState(() {
+        _errorMessage = null;
+        _results = <RecipeSummary>[];
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
+    List<RecipeSummary> nextResults = <RecipeSummary>[];
+    String? nextError;
+
     try {
-      final ingredients = IngredientsRepository.instance.ingredients;
-      final results = await _api.searchRecipes(
-        _controller.text,
+      nextResults = await _api.searchRecipes(
+        query,
         includeIngredients: ingredients,
       );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _results = results;
-      });
     } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _errorMessage = error.toString();
-        _results = <RecipeSummary>[];
-      });
-    } finally {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isLoading = false;
-      });
+      nextError = error.toString();
+      nextResults = <RecipeSummary>[];
     }
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _results = nextResults;
+      _errorMessage = nextError;
+      _isLoading = false;
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _api.close();
     super.dispose();
   }
 
