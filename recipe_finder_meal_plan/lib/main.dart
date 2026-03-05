@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'calorie_tracker/calorie_tracker_page.dart';
 import 'firebase_options.dart';
 import 'ingredients/ingredients_page.dart';
 import 'ingredients/ingredients_repository.dart';
@@ -81,6 +82,20 @@ class HomePage extends StatelessWidget {
                     );
                   },
                   child: const Text('Add Ingredients'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const CalorieTrackerPage(),
+                      ),
+                    );
+                  },
+                  child: const Text('Track Calories'),
                 ),
               ),
             ],
@@ -220,7 +235,8 @@ class _RecipePageState extends State<RecipePage> {
                 Expanded(
                   child: ListView.separated(
                     itemCount: _results.length,
-                    separatorBuilder: (_, __) => const Divider(height: 24),
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 24),
                     itemBuilder: (context, index) {
                       final recipe = _results[index];
                       return ListTile(
@@ -233,7 +249,7 @@ class _RecipePageState extends State<RecipePage> {
                                   width: 56,
                                   height: 56,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
+                                  errorBuilder: (context, error, stackTrace) =>
                                       const Icon(Icons.restaurant_menu),
                                 ),
                               ),
